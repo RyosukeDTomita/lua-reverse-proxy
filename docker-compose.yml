@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  myapp: # db or web
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: myapp:latest
+    ports:
+      - 80:8080
