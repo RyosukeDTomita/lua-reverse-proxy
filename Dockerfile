@@ -8,12 +8,18 @@ apt-get -y install lsb-release
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/openresty.gpg] http://openresty.org/package/ubuntu $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/openresty.list > /dev/null
 apt-get update
 apt-get -y install openresty
-apt-get -y install nginx
-apt-get -y install lua5.4
+apt-get -y install lua5.1
+# install http lua library
+wget -P /usr/local/openresty/luajit/share/lua/5.1/resty/ https://raw.githubusercontent.com/ledgetech/lua-resty-http/master/lib/resty/http.lua
+wget -P /usr/local/openresty/luajit/share/lua/5.1/resty/ https://raw.githubusercontent.com/ledgetech/lua-resty-http/master/lib/resty/http_headers.lua
+wget -P /usr/local/openresty/luajit/share/lua/5.1/resty/ https://raw.githubusercontent.com/ledgetech/lua-resty-http/master/lib/resty/http_connect.lua
+rm -rf /var/lib/apt/lists/*
 EOF
 
 
-# Use 8080 instead of 80 to avoid the `nginx: [emerg] bind() to 0.0.0.0:80 failed (13: Permission denied)` when using ECS.
-# EXPOSE 8080
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY reverse-proxy /usr/local/openresty/reverse-proxy
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Not using daemon mode.
+CMD ["openresty", "-g", "daemon off;"]
